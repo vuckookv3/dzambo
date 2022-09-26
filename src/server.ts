@@ -1,9 +1,9 @@
 import http from 'http';
 import app from './app';
-
+import sanitizedConfig from './config';
 
 const server = http.createServer(app);
 
-server.listen(process.env.PORT, () => {
-	console.log('Started backend on:', process.env.PORT);
+server.listen(sanitizedConfig.PORT, () => {
+	console.log('Started backend on:', sanitizedConfig.PORT);
 });

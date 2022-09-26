@@ -1,6 +1,7 @@
-import { Schema, model, Model } from 'mongoose';
+import { Schema, model, Model, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import sanitizedConfig from '../config';
 
 const UserSchema = new Schema<IUser, UserModel>(
 	{
@@ -12,6 +13,7 @@ const UserSchema = new Schema<IUser, UserModel>(
 		password: {
 			type: String,
 			required: true,
+			select: false,
 		},
 		firstName: {
 			type: String,
@@ -28,7 +30,7 @@ const UserSchema = new Schema<IUser, UserModel>(
 		},
 		isActive: {
 			type: Boolean,
-			default: false,
+			default: true,
 		},
 	},
 	{ timestamps: true }
@@ -36,7 +38,7 @@ const UserSchema = new Schema<IUser, UserModel>(
 
 // HOOKS
 UserSchema.pre('save', async function () {
-	if (this.isModified('password')) {
+	if (this.password && this.isModified('password')) {
 		const salt = bcrypt.genSaltSync(10);
 		const hash = bcrypt.hashSync(this.password, salt);
 		this.password = hash;
@@ -55,15 +57,12 @@ UserSchema.method(
 UserSchema.method('generateJWT', function generateJWT() {
 	const data: any = { _id: this._id };
 
-	return (
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		'JWT ' + jwt.sign(data, process.env.JWT_SECRET!)
-	);
+	return 'JWT ' + jwt.sign(data, sanitizedConfig.JWT_SECRET);
 });
 
 export interface IUser {
 	email: string;
-	password: string;
+	password?: string;
 	firstName: string;
 	lastName: string;
 	role: string;
@@ -72,6 +71,8 @@ export interface IUser {
 	updatedAt: Date;
 }
 
+export interface IUserDocument extends IUser, Document {}
+
 export interface IUserMethods {
 	comparePassword: (password: string) => boolean;
 	generateJWT: () => string;
@@ -79,7 +80,7 @@ export interface IUserMethods {
 
 export interface IUserStatics {}
 
-type UserModel = Model<IUser, IUserStatics, IUserMethods>;
+export type UserModel = Model<IUser, IUserStatics, IUserMethods>;
 
 const User = model<IUser, UserModel>('User', UserSchema);
 

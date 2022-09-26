@@ -14,8 +14,8 @@ const BookSchema = new Schema<IBook, BookModel>(
 			type: Date,
 			required: true,
 		},
-		numberOfPages: {
-			type: Number,
+		category: {
+			type: String,
 			default: null,
 		},
 		author: {
@@ -37,7 +37,7 @@ export interface IBook {
 	title: string;
 	publisher: string;
 	datePublished: Date;
-	numberOfPages: number | null;
+	category: string | null;
 	author: Types.ObjectId;
 }
 
